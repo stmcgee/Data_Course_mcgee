@@ -1,4 +1,5 @@
-setwd("/Users/spencer/Desktop/course_materials/Data_Course/data/")
+setwd("/Users/spencer/Desktop/Data_Course/Data_Course/assignments/")
+
 setwd
 
 list.files()[1:5]
@@ -22,4 +23,21 @@ sample(df$total, 3)
 
 levels(dat$Headwidth)[levels(dat$Headwidth)=="41mm"] <- "41.000" #change levels names
 
+## try http:// if https:// URLS are not supporte
+source("https://bioconductor.org/biocLite.R")
+biocLite(c("GenomicFeatures", "AnnotationDbi"))
+update()
+
+
+library("devtools")
+devtools::install_github("benjjneb/dada2")
+
+
+  #For practie data set.
+library(gapminder)
+df = gapminder
+glimpse(df)
+
+
+?Save
 
