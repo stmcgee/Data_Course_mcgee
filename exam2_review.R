@@ -5,7 +5,7 @@ y = rnorm(10)
 z = rnorm(10)
 obs = 1:10
 
-
+??obs
 
 df = data.frame(obs = obs,
                 X=x,
