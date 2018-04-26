@@ -1,5 +1,4 @@
 library(dada2)
-library(vegan)
 
 path <- "c:/Users/spencer/Desktop/Data_Course/Data_Course_mcgee/Final_Project/SpencerMcGee_Seqs_and_Metadata/"
 list.files(path)
@@ -41,20 +40,69 @@ clean = dada(dr,err)
 
 SeqTable = makeSequenceTable(clean)
 
-?assignTaxonomy
+
+# #taxonomy = assignTaxonomy(SeqTable, refFasta = "c:/Users/spencer/Desktop/Data_Course/Data_Course_mcgee/Final_Project/sh_general_release_dynamic_01.12.2017.fasta")
+# 
+# taxa.print <- taxonomy # Removing sequence rownames for display only
+# rownames(taxa.print) <- NULL
+# taxa.print
+# 
+# which(names(as.data.frame(SeqTable)) %in% row.names(as.data.frame(taxonomy)))
+# RSV = as.data.frame(SeqTable)
+# 
+# taxa = as.data.frame(taxonomy)
+# View(RSV)
+# names(RSV) <- paste0(taxa$Family,"_",taxa$Genus)
+# View(RSV)
+
+#get nmsd graph look for aboundace example.
+
+library(vegan)
+
+otu = SeqTable
+
+t_otu = as.data.frame(otu)
+
+diversity(t_otu)
+
+identical(row.names(t_otu), as.character(snmeta$InputFileName))
+
+adonis(t_otu ~ snmeta$SiteName)
+
+#summary(colSums(t_otu))
+
+summary(t_otu[,1])
+plot(t_otu)
+
+NMDS = metaMDS(t(t_otu))
+NMDS$points
+MDS1 = NMDS$points[,1]
+MDS2 = NMDS$points[,2]
+
+plot(MDS1,MDS2)
+
+library(ggplot2)
+
+df = data.frame(MDS1 = MDS1, MDS2=MDS2, sitename = snmeta$SiteName)
+
+ggplot(df, aes(x=MDS1, y=MDS2,color=sitename)) +
+  geom_point() +
+  stat_ellipse()
+
+adonis(t_otu ~ snmeta$SiteName)
 
 
-taxonomy = assignTaxonomy(SeqTable, refFasta = "c:/Users/spencer/Desktop/Data_Course/Data_Course_mcgee/Final_Project/sh_general_release_dynamic_01.12.2017.fasta")
+Heatmap = heatmap(as.matrix(t_otu))
 
- taxa.print <- taxonomy # Removing sequence rownames for display only
-rownames(taxa.print) <- NULL
-taxa.print
+#transpose the transpose
+Heatmap_t = heatmap(as.matrix(t(t_otu)))
 
-which(names(as.data.frame(SeqTable)) %in% row.names(as.data.frame(taxonomy)))
-RSV = as.data.frame(SeqTable)
 
-taxa = as.data.frame(taxonomy)
-View(RSV)
-names(RSV) <- paste0(taxa$Family,"_",taxa$Genus)
-View(RSV)
+#color it
+library(plyr)
+
+color = as.character(mapvalues(snmeta$SiteName, from = c("D_Sievert","Ekahanui","Kaala_Bog","Kaaikukai","Skeets_Pass"), 
+                               to = c("Blue","Red","Green","Yellow","Black")))
+
+heatmap2 = heatmap(as.matrix(t(t_otu)), ColSideColors = color, col = gray.colors(100)) 
 

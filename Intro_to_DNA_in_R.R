@@ -187,8 +187,8 @@ dir.create(file.path(getwd(),"filtered"))
 
 
 for(i in filt.files){
-  fastqFilter(i,paste0(getwd(),"/filtered/",i,".filt"),
-              truncLen = 150)
+  fastqFilter(i,paste0(getwd(),"/filtered/",i,".filt"))
+              
 }
 
 setwd(file.path(paste0(getwd(),"/filtered")))
