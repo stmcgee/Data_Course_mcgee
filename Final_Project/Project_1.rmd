@@ -7,21 +7,15 @@ library(vegan)
 library(plyr)
 ```
 
-## created and set pathway to file locations
-```{r}
+## created and set pathway to file locations adn reed in the files
+```{r include=FALSE}
 path <- "c:/Users/spencer/Desktop/Data_Course/Data_Course_mcgee/Final_Project/SpencerMcGee_Seqs_and_Metadata/"
 list.files(path)
 
 setwd(path)
-```
 
-##read in files
-```{r}
 snmeta = read.csv("Snail_MetaData.csv")
-```
 
-##take the Fastq files 
-```{r}
 fq.files = dir(path = getwd(), full.names = TRUE, pattern = ".fastq")
 plotQualityProfile(fq.files[12])
 ```
@@ -30,25 +24,20 @@ plotQualityProfile(fq.files[12])
 ```{r warning=FALSE, include=FALSE}
 filt.files = dir(path = getwd(), full.names = FALSE, pattern = ".fastq")
 
-dir.create(file.path(getwd(),"filtered"))
+#dir.create(file.path(getwd(),"filtered"))
 ```
 
-# stringent quality filter to remove N's etc
+# stringent quality filter to remove N's etc, and place the filtered files of the fastq to it own folder and Dereplicate the fastq files then learn the error rates
 ```{r}
 for(i in filt.files){
   fastqFilter(i,paste0(getwd(),"/filtered/",i,".filt"))
   
 }
 ```
-
-##place the filtered files of the fastq to it own folder
 ```{r}
+setwd("C:/Users/spencer/Desktop/Data_Course/Data_Course_mcgee/Final_Project")
 setwd(file.path(paste0(getwd(),"/filtered")))
 filtered = dir(path = getwd(), pattern = ".filt")
-```
-
-##Dereplicate the fastq files then learn the error rates
-```{r}
 dr = derepFastq(filtered)
 err = learnErrors(dr)
 ```
@@ -62,7 +51,7 @@ clean = dada(dr,err)
 SeqTable = makeSequenceTable(clean)
 ```
 
-###You can add taxa names if you have a good computer that code is hidden here.
+
 ```{r eval=FALSE, include=FALSE}
 # #taxonomy = assignTaxonomy(SeqTable, refFasta = "c:/Users/spencer/Desktop/Data_Course/Data_Course_mcgee/Final_Project/sh_general_release_dynamic_01.12.2017.fasta")
 # 
@@ -80,18 +69,21 @@ SeqTable = makeSequenceTable(clean)
 ```
 
 ##created a otu table from the Sequence table the from that create a data frame
-```[r]
+```{r}
 otu = SeqTable
 t_otu = as.data.frame(otu)
 ```
 
-##
+##we then check the diversity of the table, see if there is anything that is identical then run adonis to see what is important.
+```{r}
 diversity(t_otu)
 
 identical(row.names(t_otu), as.character(snmeta$InputFileName))
 
 adonis(t_otu ~ snmeta$SiteName)
-
+```
+##we can then plot what we find.
+```{r echo=FALSE}
 #summary(colSums(t_otu))
 
 summary(t_otu[,1])
@@ -103,35 +95,32 @@ MDS1 = NMDS$points[,1]
 MDS2 = NMDS$points[,2]
 
 plot(MDS1,MDS2)
+```
 
-library(ggplot2)
-
+##we can even plot it in ggplot2 and creat a heat map.
+```{r include=FALSE}
 df = data.frame(MDS1 = MDS1, MDS2=MDS2, sitename = snmeta$SiteName)
 
 ggplot(df, aes(x=MDS1, y=MDS2,color=sitename)) +
   geom_point() +
   stat_ellipse()
-
-
+```
+```{r include=FALSE}
 Heatmap = heatmap(as.matrix(t_otu))
-
-#transpose the transpose
+```
+```{r}
 Heatmap_t = heatmap(as.matrix(t(t_otu)))
+```
 
-
-#color it
-library(plyr)
-
+##we can then color it and apply it to the heat map.
+```{r include=FALSE}
 color = as.character(mapvalues(snmeta$SiteName, from = c("D_Sievert","Ekahanui","Kaala_Bog","Kaaikukai","Skeets_Pass"), 
                                to = c("Blue","Red","Green","Yellow","Black")))
 
 heatmap2 = heatmap(as.matrix(t(t_otu)), ColSideColors = color, col = gray.colors(100)) 
-
-# png(filename = "c:/Users/spencer/Desktop/Data_Course/Data_Course_mcgee/Final_Project/Heatmap.png")
-
+```
+```{r echo=FALSE}
+png(filename = "c:/Users/spencer/Desktop/Data_Course/Data_Course_mcgee/Final_Project/Heatmap.png")
 heatmap(as.matrix(t(t_otu)), ColSideColors = color, col = gray.colors(100))
-
-
-# dev.off()
-
-
+dev.off()
+```

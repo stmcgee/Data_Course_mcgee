@@ -38,6 +38,8 @@ plotErrors(err)
 
 clean = dada(dr,err)
 
+?knitr::knit
+
 SeqTable = makeSequenceTable(clean)
 
 
