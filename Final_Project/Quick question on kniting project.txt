@@ -1,0 +1,1 @@
+I kept running into problems when i would try and knit the project. i couldn't figue it out, so i just left it. but the code runs fine in R
