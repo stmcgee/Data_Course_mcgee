@@ -85,11 +85,9 @@ library(ggplot2)
 
 df = data.frame(MDS1 = MDS1, MDS2=MDS2, sitename = snmeta$SiteName)
 
-ggplot(df, aes(x=MDS1, y=MDS2,color=sitename)) +
+ggplot(df, aes(x=MDS1, y=MDS2)) +
   geom_point() +
   stat_ellipse()
-
-adonis(t_otu ~ snmeta$SiteName)
 
 
 Heatmap = heatmap(as.matrix(t_otu))
@@ -105,4 +103,9 @@ color = as.character(mapvalues(snmeta$SiteName, from = c("D_Sievert","Ekahanui",
                                to = c("Blue","Red","Green","Yellow","Black")))
 
 heatmap2 = heatmap(as.matrix(t(t_otu)), ColSideColors = color, col = gray.colors(100)) 
+
+png(filename = "c:/Users/spencer/Desktop/Data_Course/Data_Course_mcgee/Final_Project/Heatmap.png")
+heatmap(as.matrix(t(t_otu)), ColSideColors = color, col = gray.colors(100))
+dev.off()
+
 

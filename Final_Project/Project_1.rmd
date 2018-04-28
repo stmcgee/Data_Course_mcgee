@@ -1,0 +1,137 @@
+#First
+##Packages used dada2, vegan, ggplot2 and plyr
+```{r}
+library(dada2)
+library(ggplot2)
+library(vegan)
+library(plyr)
+```
+
+## created and set pathway to file locations
+```{r}
+path <- "c:/Users/spencer/Desktop/Data_Course/Data_Course_mcgee/Final_Project/SpencerMcGee_Seqs_and_Metadata/"
+list.files(path)
+
+setwd(path)
+```
+
+##read in files
+```{r}
+snmeta = read.csv("Snail_MetaData.csv")
+```
+
+##take the Fastq files 
+```{r}
+fq.files = dir(path = getwd(), full.names = TRUE, pattern = ".fastq")
+plotQualityProfile(fq.files[12])
+```
+
+## get filenames for files without path and filter them and so you can place them in a new forlder
+```{r warning=FALSE, include=FALSE}
+filt.files = dir(path = getwd(), full.names = FALSE, pattern = ".fastq")
+
+dir.create(file.path(getwd(),"filtered"))
+```
+
+# stringent quality filter to remove N's etc
+```{r}
+for(i in filt.files){
+  fastqFilter(i,paste0(getwd(),"/filtered/",i,".filt"))
+  
+}
+```
+
+##place the filtered files of the fastq to it own folder
+```{r}
+setwd(file.path(paste0(getwd(),"/filtered")))
+filtered = dir(path = getwd(), pattern = ".filt")
+```
+
+##Dereplicate the fastq files then learn the error rates
+```{r}
+dr = derepFastq(filtered)
+err = learnErrors(dr)
+```
+
+##plot errors then clean the data nd create a Sequence table
+```{r}
+plotErrors(err)
+
+clean = dada(dr,err)
+
+SeqTable = makeSequenceTable(clean)
+```
+
+###You can add taxa names if you have a good computer that code is hidden here.
+```{r eval=FALSE, include=FALSE}
+# #taxonomy = assignTaxonomy(SeqTable, refFasta = "c:/Users/spencer/Desktop/Data_Course/Data_Course_mcgee/Final_Project/sh_general_release_dynamic_01.12.2017.fasta")
+# 
+# taxa.print <- taxonomy # Removing sequence rownames for display only
+# rownames(taxa.print) <- NULL
+# taxa.print
+# 
+# which(names(as.data.frame(SeqTable)) %in% row.names(as.data.frame(taxonomy)))
+# RSV = as.data.frame(SeqTable)
+# 
+# taxa = as.data.frame(taxonomy)
+# View(RSV)
+# names(RSV) <- paste0(taxa$Family,"_",taxa$Genus)
+# View(RSV)
+```
+
+##created a otu table from the Sequence table the from that create a data frame
+```[r]
+otu = SeqTable
+t_otu = as.data.frame(otu)
+```
+
+##
+diversity(t_otu)
+
+identical(row.names(t_otu), as.character(snmeta$InputFileName))
+
+adonis(t_otu ~ snmeta$SiteName)
+
+#summary(colSums(t_otu))
+
+summary(t_otu[,1])
+plot(t_otu)
+
+NMDS = metaMDS(t(t_otu))
+NMDS$points
+MDS1 = NMDS$points[,1]
+MDS2 = NMDS$points[,2]
+
+plot(MDS1,MDS2)
+
+library(ggplot2)
+
+df = data.frame(MDS1 = MDS1, MDS2=MDS2, sitename = snmeta$SiteName)
+
+ggplot(df, aes(x=MDS1, y=MDS2,color=sitename)) +
+  geom_point() +
+  stat_ellipse()
+
+
+Heatmap = heatmap(as.matrix(t_otu))
+
+#transpose the transpose
+Heatmap_t = heatmap(as.matrix(t(t_otu)))
+
+
+#color it
+library(plyr)
+
+color = as.character(mapvalues(snmeta$SiteName, from = c("D_Sievert","Ekahanui","Kaala_Bog","Kaaikukai","Skeets_Pass"), 
+                               to = c("Blue","Red","Green","Yellow","Black")))
+
+heatmap2 = heatmap(as.matrix(t(t_otu)), ColSideColors = color, col = gray.colors(100)) 
+
+# png(filename = "c:/Users/spencer/Desktop/Data_Course/Data_Course_mcgee/Final_Project/Heatmap.png")
+
+heatmap(as.matrix(t(t_otu)), ColSideColors = color, col = gray.colors(100))
+
+
+# dev.off()
+
+

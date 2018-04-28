@@ -1,0 +1,30 @@
+Step1
+alias fqtofa='sed -n '\''1~4s/^@/>/p;2~4p'\'''
+
+gunzip *.gz
+
+for fn in *.fastq; do fqtofa $fn > $fn.fasta; done
+
+ls *.fasta
+
+grep -c "^>" *.fasta
+Step2
+library(ShortRead)
+library(tidyr)
+library(stringr)
+library(msa)
+library(seqinr)
+library(dada2)
+
+dir.create(file.path(getwd(),"filtered"))
+Step4
+for(i in filt.files){
+  fastqFilter(i,paste0(getwd(),"/filtered/",i,".filt"),
+              trunclen = 150)
+Step5
+
+Step6
+
+Step7
+
+Step8

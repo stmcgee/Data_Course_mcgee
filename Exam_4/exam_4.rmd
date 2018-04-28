@@ -1,0 +1,44 @@
+## first was ran in Git bash and converted the Fastq files to Fasta files
+####cd ~/Desktop/Data_Course/Data_Course/Exam3
+####alias fqtofa='sed -n '\''1~4s/^@/>/p;2~4p'\'''
+####for fn in *.fastq; do fqtofa $fn > $fn.fasta; done
+##we detected that in sample 1 fasta file there were 6577 reads and in sample 2 there are 7731. we then trimed them up and save them as a new file.
+####grep -c "^>" *.fasta
+####mv Sample1.fastq.fasta Sample1.fasta
+####mv Sample2.fastq.fasta Sample2.fasta
+####for fn in *.fasta; do cut -f 6 -d ";" *.fasta $fn > $fn.trim; done
+##then in R i started to work on the Data. irst we set our working directory and read in the metadata and the corisponding otu table.
+```{r}
+library(vegan)
+setwd("C:/Users/spencer/Desktop/Data_Course/Data_Course/Exam3/")
+meta = read.csv("exam3_metadata.csv")
+otu = read.csv("exam3_otu_table.csv")
+```
+##the meta data and the otu table was cleaned up so that we could look at the soil and rhizosphere to see if there was a connection.
+```{r}
+names(otu)
+meta2 = subset(meta, meta$SampleType %in% c("Soil","rhizosphere"))
+s_r_samples = meta2$SampleID
+otu2 = otu[,names(otu) %in% s_r_samples]
+```
+##then we transcrpibed the otu table and ran adonis. we found that locations is the only thing that seems to important
+```{r}
+t_otu2 = t(otu2)
+adonis(t_otu2 ~ meta2$SampleType * meta2$Location)
+```
+##then to find the most aboundant pacterial genus we substed the meta data into two data sets one for soil the other for rhizosphere.
+```{r include=FALSE}
+S_meta = subset(meta2, SampleType == "Soil")
+R_meta = subset(meta2, SampleType == "rhizosphere")
+
+S_otu = otu2[,names(otu2) %in% S_meta$SampleID]
+R_otu = otu2[,names(otu2) %in% R_meta$SampleID]
+```
+##then we checked to see which genus was mores aboundant for each sample
+```{r}
+max_s = max(rowSums(S_otu))
+max_r = max(rowSums(R_otu))
+
+S_max_tax = which(rowSums(S_otu) == max_s)
+r_max_tax = which(rowSums(R_otu) == max_r)
+```

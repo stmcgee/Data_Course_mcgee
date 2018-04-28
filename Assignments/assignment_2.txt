@@ -1,0 +1,6 @@
+spencer@spencers MINGW64 ~/Desktop/Data_Course/Data_Course/data/data-shell/data/pdb (master)
+$ wc -l m*
+
+$ wc -l m* > ~/Desktop/Data_Course/Data_Course_McGee/m_line/m_line.txt
+
+$ cut -d "," -f 2 animals.txt | sort | uniq > ~/Desktop/Data_Course/Data_Course_McGee/animals.txt
